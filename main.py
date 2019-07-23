@@ -13,3 +13,4 @@ def load_sheet(path_to_csv):
 
 
 print(load_sheet('sheets/players.csv'))
+print("done")
