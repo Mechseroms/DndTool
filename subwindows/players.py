@@ -1,6 +1,7 @@
 import csv
 from sheets import load_sheet
-from PyQt5.QtWidgets import QWidget, QMdiSubWindow, QListWidget, QListWidgetItem
+from PyQt5.QtWidgets import QMenu, QAction, QWidget, QMdiSubWindow, QListWidget, QListWidgetItem
+from PyQt5.QtGui import QCursor
 
 
 class PlayersSubWindow(QMdiSubWindow):
@@ -20,3 +21,52 @@ class PlayersSubWindow(QMdiSubWindow):
             item.setText(player[0])
             self.list.addItem(item)
 
+    def contextMenuEvent(self, event):
+        print(self.list.selectedItems())
+        menu = QMenu(self)
+        menu.move(QCursor.pos())
+        new = QAction('New')
+        edit = QAction('Edit')
+        edit.triggered.connect(self.edit_player)
+        delete = QAction('Delete')
+
+        menu.addAction(new)
+        menu.addAction(edit)
+        menu.addAction(delete)
+
+        if self.list.selectedItems() is None:
+            edit.setDisabled(True)
+            delete.setDisabled(True)
+        else:
+            edit.setDisabled(False)
+            delete.setDisabled(False)
+
+        menu.exec_()
+
+    def edit_player(self):
+        player_name = self.list.selectedItems()[0].text()
+        for player in load_sheet('sheets/players.csv'):
+            if player[0] == player_name:
+                player_data = player
+        d = PlayerEditDialog(player_data=player_data)
+
+
+from PyQt5.QtWidgets import QDialog, QLabel, QLineEdit, QPushButton
+
+
+class PlayerEditDialog(QDialog):
+    def __init__(self, player_data):
+        super(PlayerEditDialog, self).__init__()
+        self.player_data = player_data
+        self.setGeometry(0, 0, 200, 100)
+        self.setWindowTitle("Edit Player")
+
+        self.player_name_edit = QLineEdit(self)
+        self.player_name_edit.setGeometry(10, 10, 120, 30)
+        self.player_name_edit.setText(self.player_data[0])
+
+        self.save_button = QPushButton(self)
+        self.save_button.setText("Save")
+        self.save_button.setGeometry(130, 60, 60, 30)
+
+        self.exec_()
